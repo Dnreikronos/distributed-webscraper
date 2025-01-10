@@ -8,6 +8,10 @@ import (
 	"github.com/anthdm/hollywood/actor"
 )
 
+type VisitorRequest struct {
+	links []string
+}
+
 type Manager struct{}
 
 

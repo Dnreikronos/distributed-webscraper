@@ -30,3 +30,17 @@ func (m *Manager) Receive(c *actor.Context) {
 	}
 }
 
+func (m *Manager) handleVisitRequest(msg VisitorRequest) error {
+	for _, link := range msg.links {
+		slog.Info("Visiting urls", "url", link)
+	}
+	return nil
+}
+func main() {
+	e, err := actor.NewEngine(actor.NewEngineConfig())
+	if err != nil {
+		log.Fatal(err)
+	}
+	pid := e.Spawn(NewManager(), "manager")
+	time.Sleep(time.Second * 10)
+}

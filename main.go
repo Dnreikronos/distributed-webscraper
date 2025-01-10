@@ -42,5 +42,9 @@ func main() {
 		log.Fatal(err)
 	}
 	pid := e.Spawn(NewManager(), "manager")
+
+	time.Sleep(time.Microsecond * 500)
+
+	e.Send(pid, VisitorRequest{links: []string{"https://linkedin.com"}})
 	time.Sleep(time.Second * 10)
 }

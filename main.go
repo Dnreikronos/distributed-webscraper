@@ -31,7 +31,7 @@ func NewManager() actor.Producer {
 func (v *Visitor) Receive(c *actor.Context) {
 	switch msg := c.Message().(type) {
 	case VisitorRequest:
-		slog.Info("visitor started work", "url", msg.links[0])
+		slog.Info("visitor started work", "url", msg.links)
 	case actor.Started:
 		slog.Info("visitor started")
 	case actor.Stopped:

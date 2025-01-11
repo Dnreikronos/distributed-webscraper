@@ -12,11 +12,15 @@ type VisitorRequest struct {
 	links []string
 }
 
-type Visitor struct{}
+type Visitor struct{
+	URL string
+}
 
-func NewVisitor() actor.Producer {
+func NewVisitor(url string) actor.Producer {
 	return func() actor.Receiver {
-		return &Visitor{}
+		return &Visitor{
+			URL: url,
+		}
 	}
 }
 
@@ -30,10 +34,8 @@ func NewManager() actor.Producer {
 
 func (v *Visitor) Receive(c *actor.Context) {
 	switch msg := c.Message().(type) {
-	case VisitorRequest:
-		slog.Info("visitor started work", "url", msg.links)
 	case actor.Started:
-		slog.Info("visitor started")
+		slog.Info("visitor started", "url", v.URL)
 	case actor.Stopped:
 	}
 }

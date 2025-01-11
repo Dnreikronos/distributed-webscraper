@@ -36,6 +36,7 @@ func (m *Manager) handleVisitRequest(msg VisitorRequest) error {
 	}
 	return nil
 }
+
 func main() {
 	e, err := actor.NewEngine(actor.NewEngineConfig())
 	if err != nil {

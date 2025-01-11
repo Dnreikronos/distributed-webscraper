@@ -12,6 +12,18 @@ type VisitorRequest struct {
 	links []string
 }
 
+type Visitor struct {
+	URL string
+}
+
+func NewVisitor(url string) actor.Producer {
+	return func() actor.Receiver {
+		return &Visitor{
+			URL: url,
+		}
+	}
+}
+
 type Manager struct{}
 
 func NewManager() actor.Producer {
@@ -23,19 +35,29 @@ func NewManager() actor.Producer {
 func (m *Manager) Receive(c *actor.Context) {
 	switch msg := c.Message().(type) {
 	case VisitorRequest:
-		m.handleVisitRequest(msg)
+		m.handleVisitRequest(c, msg)
 	case actor.Started:
 		slog.Info("Manager started")
 	case actor.Stopped:
 	}
 }
 
-func (m *Manager) handleVisitRequest(msg VisitorRequest) error {
+func (v *Visitor) Receive(c *actor.Context) {
+	switch c.Message().(type) {
+	case actor.Started:
+		slog.Info("visitor started", "url", v.URL)
+	case actor.Stopped:
+	}
+}
+
+func (m *Manager) handleVisitRequest(c *actor.Context, msg VisitorRequest) error {
 	for _, link := range msg.links {
 		slog.Info("Visiting urls", "url", link)
+		c.SpawnChild(NewVisitor(link), "visitor/"+link)
 	}
 	return nil
 }
+
 func main() {
 	e, err := actor.NewEngine(actor.NewEngineConfig())
 	if err != nil {

@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"log/slog"
+	"net/http"
 	"time"
 
 	"github.com/anthdm/hollywood/actor"
@@ -61,6 +63,13 @@ func (m *Manager) handleVisitRequest(c *actor.Context, msg VisitorRequest) error
 }
 
 func main() {
+	url := "https://linkedin.com.br"
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(exctractLinks(resp.Body))
+
 	e, err := actor.NewEngine(actor.NewEngineConfig())
 	if err != nil {
 		log.Fatal(err)

@@ -1,11 +1,13 @@
 package main
 
 import (
+	"io"
 	"log"
 	"log/slog"
 	"time"
 
 	"github.com/anthdm/hollywood/actor"
+	"golang.org/x/net/html"
 )
 
 type VisitorRequest struct {
@@ -69,4 +71,26 @@ func main() {
 
 	e.Send(pid, VisitorRequest{links: []string{"https://linkedin.com"}})
 	time.Sleep(time.Second * 10)
+}
+
+func exctractLinks(body io.Reader) []string {
+	links := make([]string, 0)
+	tokenizer := html.NewTokenizer(body)
+
+	for {
+		tokenType := tokenizer.Next()
+		if tokenType == html.ErrorToken {
+			return links
+		}
+		if tokenType == html.StartTagToken {
+			token := tokenizer.Token()
+			if token.Data == "a" {
+				for _, attr := range token.Attr {
+					if attr.Key == "href" {
+						links = append(links, attr.Val)
+					}
+				}
+			}
+		}
+	}
 }

@@ -1,11 +1,15 @@
 package main
 
 import (
+	"fmt"
+	"io"
 	"log"
 	"log/slog"
+	"net/http"
 	"time"
 
 	"github.com/anthdm/hollywood/actor"
+	"golang.org/x/net/html"
 )
 
 type VisitorRequest struct {
@@ -59,6 +63,13 @@ func (m *Manager) handleVisitRequest(c *actor.Context, msg VisitorRequest) error
 }
 
 func main() {
+	url := "https://linkedin.com.br"
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(exctractLinks(resp.Body))
+
 	e, err := actor.NewEngine(actor.NewEngineConfig())
 	if err != nil {
 		log.Fatal(err)
@@ -69,4 +80,26 @@ func main() {
 
 	e.Send(pid, VisitorRequest{links: []string{"https://linkedin.com"}})
 	time.Sleep(time.Second * 10)
+}
+
+func exctractLinks(body io.Reader) []string {
+	links := make([]string, 0)
+	tokenizer := html.NewTokenizer(body)
+
+	for {
+		tokenType := tokenizer.Next()
+		if tokenType == html.ErrorToken {
+			return links
+		}
+		if tokenType == html.StartTagToken {
+			token := tokenizer.Token()
+			if token.Data == "a" {
+				for _, attr := range token.Attr {
+					if attr.Key == "href" {
+						links = append(links, attr.Val)
+					}
+				}
+			}
+		}
+	}
 }

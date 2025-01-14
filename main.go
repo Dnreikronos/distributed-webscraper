@@ -25,9 +25,11 @@ type Job struct {
 	Description string
 }
 
-type Visitor struct {
-	URL string
-}
+func cleanText(s string) string {
+	doc, err := html.Parse(strings.NewReader(s))
+	if err != nil {
+		return strings.TrimSpace(s)
+	}
 
 func NewVisitor(url string) actor.Producer {
 	return func() actor.Receiver {

@@ -87,9 +87,9 @@ func main() {
 
 	time.Sleep(time.Microsecond * 500)
 
-	e.Send(pid, VisitorRequest{links: []string{"https://linkedin.com"}})
-	time.Sleep(time.Second * 10)
-}
+	urls := []string{
+		"https://remoteok.com/remote-software-jobs",
+	}
 
 func exctractLinks(body io.Reader) []string {
 	links := make([]string, 0)

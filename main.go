@@ -18,8 +18,11 @@ import (
 	"golang.org/x/net/html"
 )
 
-type VisitorRequest struct {
-	links []string
+type Job struct {
+	Title       string
+	Company     string
+	Location    string
+	Description string
 }
 
 type Visitor struct {

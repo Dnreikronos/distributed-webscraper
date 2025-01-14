@@ -31,20 +31,31 @@ func cleanText(s string) string {
 		return strings.TrimSpace(s)
 	}
 
-func NewVisitor(url string) actor.Producer {
-	return func() actor.Receiver {
-		return &Visitor{
-			URL: url,
+	var buf bytes.Buffer
+	var extractText func(*html.Node)
+	extractText = func(n *html.Node) {
+		if n.Type == html.TextNode {
+			buf.WriteString(n.Data)
+			buf.WriteString(" ")
+		}
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			extractText(c)
 		}
 	}
+	extractText(doc)
+
+	text := buf.String()
+	space := regexp.MustCompile(`\s+`)
+	text = space.ReplaceAllString(text, " ")
+
+	text = strings.ReplaceAll(text, "&nbsp;", " ")
+	text = strings.ReplaceAll(text, "&amp;", "&")
+	text = strings.ReplaceAll(text, "&lt;", "<")
+	text = strings.ReplaceAll(text, "&gt;", ">")
+	text = strings.ReplaceAll(text, "&quot;", "\"")
+
+	return strings.TrimSpace(text)
 }
-
-type Manager struct{}
-
-func NewManager() actor.Producer {
-	return func() actor.Receiver {
-		return &Manager{}
-	}
 
 func scrapeJobListings(ctx context.Context, url string) ([]Job, error) {
 	client := &http.Client{

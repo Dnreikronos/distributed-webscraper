@@ -85,28 +85,28 @@ func main() {
 	}
 	pid := e.Spawn(NewManager(), "manager")
 
-	time.Sleep(time.Microsecond * 500)
+func main() {
+	ctx := context.Background()
+	g, ctx := errgroup.WithContext(ctx)
 
 	urls := []string{
 		"https://remoteok.com/remote-software-jobs",
 	}
 
-func exctractLinks(body io.Reader) []string {
-	links := make([]string, 0)
-	tokenizer := html.NewTokenizer(body)
+	for _, url := range urls {
+		url := url
+		g.Go(func() error {
+			fmt.Printf("Scraping URL: %s\n", url)
 
-	for {
-		tokenType := tokenizer.Next()
-		if tokenType == html.ErrorToken {
-			return links
-		}
-		if tokenType == html.StartTagToken {
-			token := tokenizer.Token()
-			if token.Data == "a" {
-				for _, attr := range token.Attr {
-					if attr.Key == "href" {
-						links = append(links, attr.Val)
-					}
+			jobs, err := scrapeJobListings(ctx, url)
+			if err != nil {
+				return fmt.Errorf("failed to scrape %s: %w", url, err)
+			}
+
+			if len(jobs) == 0 {
+				fmt.Println("No jobs found. The site structure might have changed or blocking requests.")
+				return nil
+			}
 				}
 			}
 		}

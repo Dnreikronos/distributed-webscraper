@@ -45,46 +45,83 @@ func NewManager() actor.Producer {
 	return func() actor.Receiver {
 		return &Manager{}
 	}
-}
 
-func (m *Manager) Receive(c *actor.Context) {
-	switch msg := c.Message().(type) {
-	case VisitorRequest:
-		m.handleVisitRequest(c, msg)
-	case actor.Started:
-		slog.Info("Manager started")
-	case actor.Stopped:
+func scrapeJobListings(ctx context.Context, url string) ([]Job, error) {
+	client := &http.Client{
+		Timeout: 30 * time.Second,
 	}
-}
 
-func (v *Visitor) Receive(c *actor.Context) {
-	switch c.Message().(type) {
-	case actor.Started:
-		slog.Info("visitor started", "url", v.URL)
-	case actor.Stopped:
-	}
-}
-
-func (m *Manager) handleVisitRequest(c *actor.Context, msg VisitorRequest) error {
-	for _, link := range msg.links {
-		slog.Info("Visiting urls", "url", link)
-		c.SpawnChild(NewVisitor(link), "visitor/"+link)
-	}
-	return nil
-}
-
-func main() {
-	url := "https://linkedin.com.br"
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
-	fmt.Println(exctractLinks(resp.Body))
 
-	e, err := actor.NewEngine(actor.NewEngineConfig())
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
+	req.Header.Set("Cache-Control", "no-cache")
+	req.Header.Set("Connection", "keep-alive")
+
+	time.Sleep(2 * time.Second)
+
+	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to fetch URL: %w", err)
 	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("received non-200 response code: %d", resp.StatusCode)
+	}
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse HTML: %w", err)
+	}
+
+	var jobs []Job
+
+	doc.Find(".job").Each(func(i int, s *goquery.Selection) {
+		title := cleanText(s.Find(".company_and_position h2").Text())
+		company := cleanText(s.Find(".company_and_position h3").Text())
+		location := cleanText(s.Find(".location").Text())
+		description := cleanText(s.Find(".description").Text())
+
+		fmt.Printf("\nFound job #%d:\nTitle: %s\nCompany: %s\nLocation: %s\nDescription preview: %.100s...\n",
+			i+1, title, company, location, description)
+
+		if title != "" || company != "" || location != "" || description != "" {
+			job := Job{
+				Title:       title,
+				Company:     company,
+				Location:    location,
+				Description: description,
+			}
+			jobs = append(jobs, job)
+		}
+	})
+
+	if len(jobs) == 0 {
+		doc.Find(".job-listing").Each(func(i int, s *goquery.Selection) {
+			title := cleanText(s.Find(".job-title").Text())
+			company := cleanText(s.Find(".company-name").Text())
+			location := cleanText(s.Find(".location").Text())
+			description := cleanText(s.Find(".job-description").Text())
+
+			if title != "" || company != "" || location != "" || description != "" {
+				job := Job{
+					Title:       title,
+					Company:     company,
+					Location:    location,
+					Description: description,
+				}
+				jobs = append(jobs, job)
+			}
+		})
+	}
+
+	return jobs, nil
+}
 	pid := e.Spawn(NewManager(), "manager")
 
 func main() {

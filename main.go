@@ -1,19 +1,28 @@
 package main
 
 import (
+	"bytes"
+	"context"
 	"fmt"
-	"io"
+	"github.com/PuerkitoBio/goquery"
+	"golang.org/x/net/html"
+	"golang.org/x/sync/errgroup"
 	"log"
 	"log/slog"
 	"net/http"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/anthdm/hollywood/actor"
 	"golang.org/x/net/html"
 )
 
-type VisitorRequest struct {
-	links []string
+type Job struct {
+	Title       string
+	Company     string
+	Location    string
+	Description string
 }
 
 type Visitor struct {

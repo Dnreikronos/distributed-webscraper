@@ -107,8 +107,21 @@ func main() {
 				fmt.Println("No jobs found. The site structure might have changed or blocking requests.")
 				return nil
 			}
-				}
+
+			fmt.Printf("\nFound %d jobs:\n\n", len(jobs))
+			for i, job := range jobs {
+				fmt.Printf("Job #%d:\n", i+1)
+				fmt.Printf("Title: %s\nCompany: %s\nLocation: %s\nDescription: %.200s...\n\n",
+					job.Title,
+					job.Company,
+					job.Location,
+					job.Description)
 			}
-		}
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		log.Fatal("Error during scraping:", err)
 	}
 }

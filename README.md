@@ -27,11 +27,6 @@
         </li>
     </ul>
 
-   <h2>Installation</h2>
-    <pre><code>go get github.com/PuerkitoBio/goquery
-go get golang.org/x/net/html
-go get golang.org/x/sync/errgroup</code></pre>
-
   <h2>Usage</h2>
     <pre><code>make run</code></pre>
 

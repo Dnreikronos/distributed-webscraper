@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/anthdm/hollywood/actor"
-	"golang.org/x/net/html"
 )
 
 type Job struct {

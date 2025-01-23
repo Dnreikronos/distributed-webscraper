@@ -8,14 +8,10 @@ import (
 	"golang.org/x/net/html"
 	"golang.org/x/sync/errgroup"
 	"log"
-	"log/slog"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
-
-	"github.com/anthdm/hollywood/actor"
-	"golang.org/x/net/html"
 )
 
 type Job struct {
@@ -98,9 +94,6 @@ func scrapeJobListings(ctx context.Context, url string) ([]Job, error) {
 		location := cleanText(s.Find(".location").Text())
 		description := cleanText(s.Find(".description").Text())
 
-		fmt.Printf("\nFound job #%d:\nTitle: %s\nCompany: %s\nLocation: %s\nDescription preview: %.100s...\n",
-			i+1, title, company, location, description)
-
 		if title != "" || company != "" || location != "" || description != "" {
 			job := Job{
 				Title:       title,
@@ -133,7 +126,6 @@ func scrapeJobListings(ctx context.Context, url string) ([]Job, error) {
 
 	return jobs, nil
 }
-	pid := e.Spawn(NewManager(), "manager")
 
 func main() {
 	ctx := context.Background()

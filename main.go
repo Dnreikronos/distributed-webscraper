@@ -130,7 +130,6 @@ func scrapeJobListings(ctx context.Context, url string) ([]Job, error) {
 
 	return jobs, nil
 }
-	pid := e.Spawn(NewManager(), "manager")
 
 func main() {
 	ctx := context.Background()

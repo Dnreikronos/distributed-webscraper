@@ -95,9 +95,6 @@ func scrapeJobListings(ctx context.Context, url string) ([]Job, error) {
 		location := cleanText(s.Find(".location").Text())
 		description := cleanText(s.Find(".description").Text())
 
-		fmt.Printf("\nFound job #%d:\nTitle: %s\nCompany: %s\nLocation: %s\nDescription preview: %.100s...\n",
-			i+1, title, company, location, description)
-
 		if title != "" || company != "" || location != "" || description != "" {
 			job := Job{
 				Title:       title,

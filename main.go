@@ -12,7 +12,6 @@ import (
 	"regexp"
 	"strings"
 	"time"
-
 )
 
 type Job struct {

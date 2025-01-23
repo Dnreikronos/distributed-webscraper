@@ -8,13 +8,11 @@ import (
 	"golang.org/x/net/html"
 	"golang.org/x/sync/errgroup"
 	"log"
-	"log/slog"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
 
-	"github.com/anthdm/hollywood/actor"
 )
 
 type Job struct {
